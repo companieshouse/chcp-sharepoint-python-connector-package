@@ -1,0 +1,7 @@
+repos:
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.7.1  # check latest if you like
+    hooks:
+      - id: nbstripout
+        # Optional: keep things you want
+        args: [--drop-empty-cells, --extra-keys=metadata.kernelspec, --extra-keys=metadata.language_info]

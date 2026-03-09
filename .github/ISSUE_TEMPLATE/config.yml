@@ -1,0 +1,19 @@
+blank_issues_enabled: false
+
+issue_templates:
+  - name: "Feature Request"
+    description: "Suggest a new feature or enhancement for Data Analytics workflows (SQL, Python, R, etc)."
+    file: feature-request.yml
+
+  - name: "Bug Report (SQL, Python, R)"
+    description: "Report a bug or unexpected behaviour in any Data Analytics code or process (SQL, Python, R)."
+    file: bug-report.yml
+
+  - name: "General Discussion / Design Decision"
+    description: "Open a discussion for governance, architecture, or cross-team analytics topics."
+    file: discussion.yml
+
+contact_links:
+  - name: "Questions & Support"
+    url: "https://github.com/companieshouse/ch-analytics-repository-template/discussions"
+    about: "For general queries or design conversations."

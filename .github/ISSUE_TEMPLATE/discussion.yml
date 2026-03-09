@@ -1,0 +1,50 @@
+---
+name: "General Discussion / Design Decision"
+about: "Start a discussion about architecture, governance, or cross-team analytics topics."
+title: "Discussion: "
+labels: [discussion]
+assignees: []
+
+body:
+  - type: input
+    id: topic
+    attributes:
+      label: "Discussion topic"
+      description: "Short title for the discussion."
+      required: true
+
+  - type: textarea
+    id: background
+    attributes:
+      label: "Background / context"
+      description: "Why is this topic being raised? Provide relevant history, constraints, and stakeholders."
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: "Proposal / options"
+      description: "Outline one or more proposals, trade-offs, and preferred option."
+      required: false
+
+  - type: textarea
+    id: considerations
+    attributes:
+      label: "Operational considerations"
+      description: "Consider things like testing, monitoring, data privacy, cost, and migration steps."
+      required: false
+
+  - type: textarea
+    id: questions
+    attributes:
+      label: "Questions for reviewers"
+      description: "Any specific questions or decisions you want reviewers to make."
+      required: false
+
+  - type: textarea
+    id: resources
+    attributes:
+      label: "References / resources"
+      description: "Links to designs, notebooks, datasets, or related issues."
+      required: false
+---

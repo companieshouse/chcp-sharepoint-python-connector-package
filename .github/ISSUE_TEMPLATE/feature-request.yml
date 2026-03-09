@@ -1,0 +1,80 @@
+---
+name: "Feature Request"
+about: "Suggest a new feature or enhancement for Data Analytics workflows (SQL, Python, R, notebooks, pipelines)."
+title: "Feature: "
+labels: [enhancement]
+assignees: []
+
+body:
+  - type: input
+    id: summary
+    attributes:
+      label: "Short summary"
+      description: "One-line summary of the requested feature or enhancement."
+      placeholder: "Add a concise summary (1 sentence)"
+      required: true
+
+  - type: textarea
+    id: motivation
+    attributes:
+      label: "Motivation / problem statement"
+      description: "Why is this feature needed? Describe the pain point or user need."
+      placeholder: "Explain the problem this feature will solve."
+      required: true
+
+  - type: textarea
+    id: description
+    attributes:
+      label: "Detailed description"
+      description: "Describe the proposed change, the expected behaviour, and any alternatives considered."
+      placeholder: "Describe the feature in more detail."
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: "Affected area"
+      description: "Which area does this feature touch?"
+      options:
+        - Datasets
+        - ETL / Pipelines
+        - SQL / Queries
+        - Python / Scripts
+        - R / Notebooks
+        - Reporting / Dashboards
+        - Documentation
+        - Other
+      required: true
+
+  - type: input
+    id: impact
+    attributes:
+      label: "Impact"
+      description: "Who will benefit and how (teams, downstream processes)."
+      placeholder: "e.g. reduces manual effort for analysis team by X%"
+      required: false
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: "Acceptance criteria"
+      description: "How will we know this feature is successfully implemented?"
+      placeholder: "List measurable acceptance criteria."
+      required: false
+
+  - type: input
+    id: reproducibility
+    attributes:
+      label: "Backward compatibility / migration notes"
+      description: "Any notes on compatibility, required migrations, or data changes."
+      placeholder: "Describe migration steps, breaking changes, or compatibility concerns."
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: "Additional context / attachments"
+      description: "Add links to mockups, notebooks, queries, sample data, or related issues."
+      placeholder: "Links or additional context"
+      required: false
+---

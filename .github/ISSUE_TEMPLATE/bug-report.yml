@@ -1,0 +1,84 @@
+---
+name: "Bug Report (SQL, Python, R)"
+about: "Report a bug, data quality issue, or unexpected behaviour in Data Analytics code or processes."
+title: "Bug: "
+labels: [bug]
+assignees: []
+
+body:
+  - type: input
+    id: summary
+    attributes:
+      label: "Short summary"
+      description: "One-line summary of the bug."
+      placeholder: "e.g. Data mismatch in monthly report"
+      required: true
+
+  - type: dropdown
+    id: severity
+    attributes:
+      label: "Severity"
+      description: "How severe is the issue?"
+      options:
+        - Critical (production downtime / incorrect decisions)
+        - High (broken pipeline or major data loss)
+        - Medium (incorrect values, non-critical)
+        - Low (minor or cosmetic)
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: "Steps to reproduce"
+      description: "Provide step-by-step instructions, queries, or commands to reproduce the issue. Include sample input if possible."
+      placeholder: "1. Run ...\n2. Observe ..."
+      required: true
+
+  - type: textarea
+    id: observed
+    attributes:
+      label: "Observed behaviour"
+      description: "What actually happened (error messages, stack traces, incorrect results)."
+      placeholder: "Paste errors, stack traces, or screenshots/links."
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: "Expected behaviour"
+      description: "What you expected to happen."
+      placeholder: "Describe expected results."
+      required: true
+
+  - type: input
+    id: environment
+    attributes:
+      label: "Environment"
+      description: "Where did this occur? (dev/staging/prod, Snowflake/BigQuery/Postgres, Python version, R version)."
+      placeholder: "e.g. prod, Snowflake, Python 3.9"
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: "Relevant logs / query / script snippet"
+      description: "Include query text, minimal reproducible script, or logs. Remove any secrets."
+      placeholder: "Paste SQL query, code snippet or logs."
+      required: false
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: "Impact / users affected"
+      description: "Who or what processes are affected by this bug?"
+      placeholder: "e.g. monthly reporting, downstream BI dashboards"
+      required: false
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: "Additional context"
+      description: "Any other notes, related issues, or temporary mitigations."
+      placeholder: "Links to related issues or PRs"
+      required: false
+---
