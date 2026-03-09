@@ -100,7 +100,7 @@ The Microsoft Graph API uses a specific format to define the location of a file 
 
 #### 4.1 site_id
 The Microsoft Graph API uses a url in a specific format (not the url found in the browser when you visit a Sharepoint site)
-`to_graph_site_url()` converts the url found in a browser to the graph api format. This allows you to visit a Sharepoint site in browser copy the url, and then paste it into the method to produce the graph api url. 
+`to_graph_site_url()` converts the url found in a browser to the graph api format. This allows you to visit a Sharepoint site in browser, copy the url, and then paste it into the method to produce the graph api url. 
 
 ``` python
 graph_site_url = client.to_graph_site_url("https://yourcompany.sharepoint.com/sites/YourSite")
