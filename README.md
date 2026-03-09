@@ -31,21 +31,23 @@ This package provides a Python interface for interacting with Microsoft SharePoi
 
 ## Installation
 
-You can install this package locally using [uv](https://github.com/astral-sh/uv):
+You can install this package directly from the GitHub repo using [uv](https://github.com/astral-sh/uv). 
 
-To so this, simply run:
+In the terminal type:
 
 ```sh
-uv pip install </path/to/spconnect_package>
+uv add git+https://github.com/companieshouse/chcp-sharepoint-python-connector-package.git
+```
+
+You can also install it from a local clone of the repository using:
+
+```sh
+uv add </path/to/spconnect_package>
 ```
 Replace `</path/to/spconnect_package>` with the path to this folder. uv will build and install the package automatically.
 
 
-To install from the GitHub repo use:
 
-```sh
-uv pip install git+<github url>
-```
 
 ## Instructions: Using the spconnect Package
 
@@ -94,7 +96,7 @@ The Microsoft Graph API uses a specific format to define the location of a file 
 
 `site_id/drive_id/file_id`
 
-*Note: confusingly the `file_id` is a distinct identifier pointing to a file within a drive. a file can be within folders in the drive, but it will still have a distinct ID*
+*Note: confusingly the `file_id` is a distinct identifier pointing to a file within a drive. a file can be within folders in the drive, and the file ID covers the folders and file name*
 
 #### 4.1 site_id
 The Microsoft Graph API uses a url in a specific format (not the url found in the browser when you visit a Sharepoint site)
