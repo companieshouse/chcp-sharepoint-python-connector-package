@@ -103,7 +103,7 @@ You can use the `parse_url_to_ids()` method to extract the `site_id`, `drive_id`
 
 To get the file URL from SharePoint:
 - Locate the file in SharePoint.
-- Click on the `More Actions` button (three dots: `...`) next to the file name.
+- Click on the `More Actions` button (`...`) next to the file name.
 - Scroll down and select `Path`.
 - Click on `Copy Path` to copy the file URL to your clipboard.
 
