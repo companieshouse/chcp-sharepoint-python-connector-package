@@ -1,3 +1,4 @@
+    
 """
 sharepoint_client.py
 
@@ -6,12 +7,11 @@ SharePoint via the Microsoft Graph API.
 
 Features:
 - Authenticate using Azure AD credentials (tenant ID, client ID, client secret)
-- Retrieve site and drive IDs
-- Find site and drive IDs using their names
-- List folder contents
+- Retrieve site, drive and file IDs
+- List Sharepoint folder contents
 - Download files from SharePoint
-- Upload files (small and large) to SharePoint
-- Convert SharePoint URLs to Graph API site identifiers
+- Load Sharepoint files into memory
+- Upload files to SharePoint
 
 Raises:
     Exception: If authentication or file operations fail
@@ -22,7 +22,7 @@ import msal
 import requests
 import os
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urlparse, unquote
 
 
 class SharePointClient:
@@ -75,23 +75,33 @@ class SharePointClient:
         raise ValueError(f"Drive '{drive_name}' not found for site '{site_id}'.")
     
     def get_folder_content(
-            self, 
-            site_id: str, 
-            drive_id: str, 
+            self,
+            site_id: str,
+            drive_id: str,
             folder_path: str = 'root'
-        ) -> dict:
-        if folder_path == 'root' or folder_path.strip() == '':
-            folder_url = f'{self.ms_graph_url}/sites/{site_id}/drives/{drive_id}/root/children'
-        else:
-            # Ensure no leading/trailing slashes
-            folder_path_clean = folder_path.strip('/\\')
-            folder_url = f'{self.ms_graph_url}/sites/{site_id}/drives/{drive_id}/root:/{folder_path_clean}:/children'
-        response = requests.get(folder_url, headers={'Authorization': f'Bearer {self.access_token}'})
-        items_data = response.json().get('value', [])
-        folder_dict = {}
-        for item in items_data:
-            folder_dict[item['id']] = item['name']
-        return folder_dict
+        ) -> list:
+            """
+            Returns a list of all items (dicts with 'id' and 'name') in the specified 
+            folder, handling pagination.
+            """
+            if folder_path == 'root' or folder_path.strip() == '':
+                folder_url = f'{self.ms_graph_url}/sites/{site_id}/drives/{drive_id}/root/children'
+            else:
+                folder_path_clean = folder_path.strip('/\\')
+                folder_url = f'{self.ms_graph_url}/sites/{site_id}/drives/{drive_id}/root:/{folder_path_clean}:/children'
+
+            headers = {'Authorization': f'Bearer {self.access_token}'}
+            next_url = folder_url
+            folder_dict = {}
+
+            while next_url:
+                response = requests.get(next_url, headers=headers)
+                data = response.json()
+                items_data = data.get('value', [])
+                for item in items_data:
+                    folder_dict[item['id']] = item['name']
+                next_url = data.get('@odata.nextLink')
+            return folder_dict
     
     def resolve_file_id(
             self, 
@@ -133,6 +143,52 @@ class SharePointClient:
         if not file_name:
             raise Exception("Could not determine file name from metadata.")
         return file_name
+    
+    @staticmethod
+    def find_spaced_drive_name(
+            no_space_drive_name: str, 
+            spaced_drive_name_list: list
+        ) -> str:
+        """
+        Sharepoint removes the spaces in drive names in the url. This function takes a 
+        drive name without spaces as input, and finds the full drive name if it exists
+        in the specified drive names list (that contain spaces).
+        """
+        for s in spaced_drive_name_list:
+            if s.replace(" ", "") == no_space_drive_name:
+                return s  # Return the original string with spaces
+        raise ValueError("Drive name not found in the list.")
+
+    def parse_url_to_ids(self, url: str) -> dict:
+        """
+        Parse a SharePoint file URL and return site_id, drive_id, and file_id as a dictionary.
+        Example URL:
+        https://yourtenant.sharepoint.com/sites/YourSite/YourDrive/YourFile.csv
+        """
+        
+        parsed = urlparse(url)
+        path_parts = [unquote(part) for part in parsed.path.strip('/').split('/')]
+        # Find site name
+        if 'sites' in path_parts:
+            site_index = path_parts.index('sites')
+            site_name = path_parts[site_index + 1]
+        else:
+            raise ValueError("URL does not contain a site name.")
+        
+        drive_name_no_spaces = path_parts[site_index + 2] if len(path_parts) > site_index + 2 else ''
+        folder_path = '/'.join(path_parts[site_index + 3:-1]) if len(path_parts) > site_index + 2 else ''
+        file_name = path_parts[-1]
+
+        site_url = f"{parsed.netloc}:/sites/{site_name}"
+        site_id = self.get_site_id(site_url)
+        drives = self.get_drives(site_id)
+        drive_name = self.find_spaced_drive_name(drive_name_no_spaces, drives.values())
+        
+       
+        drive_id = self.resolve_drive_id(site_id, drive_name)
+        file_id = self.resolve_file_id(site_id, drive_id, file_name, folder_path)
+      
+        return {"site_id": site_id, "drive_id": drive_id, "file_id": file_id}
     
     def download_file_to_disk(
             self, 
@@ -302,3 +358,4 @@ class SharePointClient:
         graph_url = f"{hostname}:/{site_path}"
         
         return graph_url
+    

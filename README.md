@@ -9,13 +9,14 @@ This package provides a Python interface for interacting with Microsoft SharePoi
     - [1. Install Required Packages](#1-install-required-packages)
     - [2. Store Credentials in a .env File](#2-store-credentials-in-a-env-file)
     - [3. Authenticate with Azure AD Using Environment Variables](#3-authenticate-with-azure-ad-using-environment-variables)
-    - [4. Get Site and Drive IDs](#4-get-site-and-drive-ids)
-      - [4.1 site\_id](#41-site_id)
-      - [4.2 drive\_id](#42-drive_id)
-    - [5. List Folder Contents](#5-list-folder-contents)
-    - [6. Download a File](#6-download-a-file)
-    - [7. Load a file into memory (as a byte file)](#7-load-a-file-into-memory-as-a-byte-file)
-    - [8. Upload a File](#8-upload-a-file)
+    - [4 Get Site, Drive and File IDs](#4-get-site-drive-and-file-ids)
+      - [4.1 Extract IDs from a SharePoint File URL](#41-extract-ids-from-a-sharepoint-file-url)
+      - [4.2 Find the `site_id`](#42-find-the-site_id)
+      - [4.3 Find the `drive_id`](#43-find-the-drive_id)
+      - [4.4 Find the `file_id`](#44-find-the-file_id)
+    - [5. Download a File](#5-download-a-file)
+    - [6. Load a file into memory (as a byte file)](#6-load-a-file-into-memory-as-a-byte-file)
+    - [7. Upload a File](#7-upload-a-file)
   - [Notes](#notes)
   - [Microsoft Graph API resources](#microsoft-graph-api-resources)
   - [License](#license)
@@ -45,7 +46,6 @@ You can also install it from a local clone of the repository using:
 uv add </path/to/spconnect_package>
 ```
 Replace `</path/to/spconnect_package>` with the path to this folder. uv will build and install the package automatically.
-
 
 
 
@@ -89,8 +89,7 @@ client = SharePointClient(
 
 *Note: Make sure to install `python-dotenv` if you haven't already:*
 
-
-### 4. Get Site and Drive IDs
+### 4 Get Site, Drive and File IDs
 
 The Microsoft Graph API uses a specific format to define the location of a file in a Sharepoint site. This can be summarised as:
 
@@ -98,7 +97,30 @@ The Microsoft Graph API uses a specific format to define the location of a file 
 
 *Note: confusingly the `file_id` is a distinct identifier pointing to a file within a drive. a file can be within folders in the drive, and the file ID covers the folders and file name*
 
-#### 4.1 site_id
+#### 4.1 Extract IDs from a SharePoint File URL
+
+You can use the `parse_url_to_ids()` method to extract the `site_id`, `drive_id`, and `file_id` directly from a SharePoint file URL. This is useful if you have a link to a file and want to quickly get the identifiers needed for other API calls. 
+
+To get the file URL from SharePoint:
+- Locate the file in SharePoint.
+- Click on the `More Actions` button (three dots: `...`) next to the file name.
+- Scroll down and select `Path`.
+- Click on `Copy Path` to copy the file URL to your clipboard.
+
+```python
+# Example SharePoint file URL (replace with your actual file URL)
+file_url = "https://yourtenant.sharepoint.com/sites/YourSite/YourDrive/Your%20File.csv"
+
+# This will return a dictionary with keys: 'site_id', 'drive_id', 'file_id'
+ids = client.parse_url_to_ids(file_url)
+print(ids)
+# Output: {'site_id': '...', 'drive_id': '...', 'file_id': '...'}
+
+# You can then use these IDs in other methods:
+client.download_file_to_disk(ids['site_id'], ids['drive_id'], ids['file_id'], local_path="./downloads")
+```
+
+#### 4.2 Find the `site_id`
 The Microsoft Graph API uses a url in a specific format (not the url found in the browser when you visit a Sharepoint site)
 `to_graph_site_url()` converts the url found in a browser to the graph api format. This allows you to visit a Sharepoint site in browser, copy the url, and then paste it into the method to produce the graph api url. 
 
@@ -107,7 +129,7 @@ graph_site_url = client.to_graph_site_url("https://yourcompany.sharepoint.com/si
 site_id = client.get_site_id(graph_site_url)
 ```
 
-#### 4.2 drive_id
+#### 4.3 Find the `drive_id`
 
 To view the drives within a site, you can use: 
 
@@ -123,34 +145,37 @@ If you know the name of a drive (e.g. you are looking at it in a browser), the d
 client.resolve_drive_id(site_id, "Documents")
 ```
 
+#### 4.4 Find the `file_id`
 
-### 5. List Folder Contents
-To list the contents of a folder (root of a drive, or a subfolder within a drive):
+There are two main ways to find the `file_id` for a file in SharePoint:
 
-```python
-# for root of drive:
-contents = client.get_folder_content(site_id, drive_id)
-# For a subfolder:
-contents = client.get_folder_content(site_id, drive_id, folder_path="Shared Documents/Reports")
-```
+**From folder contents:**
+  Use `get_folder_content(site_id, drive_id, folder_path)` to list all files and folders in a location. This returns a dictionary where the keys are file IDs and the values are file names.
 
-### 6. Download a File
+  ```python
+  contents = client.get_folder_content(site_id, drive_id, folder_path="Shared Documents/Reports")
+  ```
+
+**From file name:**
+  Use `resolve_file_id(site_id, drive_id, file_name, folder_path)` to get the file ID directly if you know the file name and (optionally) the folder path.
+
+  ```python
+  file_id = client.resolve_file_id(site_id, drive_id, file_name="file.csv", folder_path="Shared Documents/Reports")
+  ```
+
+You can then use the `file_id` with download, upload, or other file operations.
+
+### 5. Download a File
 To download a file from SharePoint:
 
 ```python
 client.download_file_to_disk(site_id, drive_id, file_id, local_path="./downloads")
 ```
 
-you can get the file id the folder contents dictionary, or from it's name, and the name of the folder it's in (if it's in a folder).
-you can use `resolve_file_id()` to get the file ID from it's name:
+### 6. Load a file into memory (as a byte file)
 
-```python
-file_id = client.resolve_file_id(site_id, drive_id, file_name="file.csv", folder_path="Shared Documents/Reports")
-```
-
-### 7. Load a file into memory (as a byte file)
-
-Load a file into memory:
+Load a file into memory, this is useful if you want to perform operations on the data
+before saving e.g. data cleaning:
 
 ```python
 byte_file = client.download_file_bytes(site_id, drive_id, file_id)
@@ -159,7 +184,7 @@ byte_file = client.download_file_bytes(site_id, drive_id, file_id)
 df = pl.read_excel(BytesIO(byte_file))
 ```
 
-### 8. Upload a File
+### 7. Upload a File
 To upload a file to SharePoint:
 - **local_file_path**: Path to the file on your computer
 - **upload_folder_path**: Target folder in SharePoint (optional: if not supplied, the file will be uploaded to the root of the drive)
