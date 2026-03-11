@@ -1,9 +1,32 @@
 [project]
 name = "spconnect"
-version = "0.1.0"
-description = "Add your description here"
+version = "0.0.1"
+authors = [
+    {name="samuel speller", email="sspeller@companieshouse.gov.uk"}
+]
+description = """
+    This package provides a Python interface for interacting with Microsoft 
+    SharePoint via the Microsoft Graph API. It supports authentication, 
+    file upload/download and folder navigation.
+"""
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
 dependencies = [
     "msal>=1.34.0",
 ]
+license = "MIT"
+license-files = ["LICEN[CS]E*"]
+
+[build-system]
+requires = [
+    "hatchling >= 1.26",
+    "msal>=1.34.0"
+]
+build-backend = "hatchling.build"
+
+[project.urls]
+Homepage = "https://github.com/companieshouse/chcp-sharepoint-python-connector-package"
