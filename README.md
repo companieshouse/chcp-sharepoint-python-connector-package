@@ -32,22 +32,19 @@ This package provides a Python interface for interacting with Microsoft SharePoi
 
 ## Installation
 
-You can install this package directly from the GitHub repo using [uv](https://github.com/astral-sh/uv). 
+You can install this package directly from the PyPI using `pip` or `uv`. 
 
 In the terminal type:
 
 ```sh
-uv add git+https://github.com/companieshouse/chcp-sharepoint-python-connector-package.git
+uv add spconnect
 ```
 
-You can also install it from a local clone of the repository using:
+or
 
 ```sh
-uv add </path/to/spconnect_package>
+pip install spconnect
 ```
-Replace `</path/to/spconnect_package>` with the path to this folder. uv will build and install the package automatically.
-
-
 
 ## Instructions: Using the spconnect Package
 
