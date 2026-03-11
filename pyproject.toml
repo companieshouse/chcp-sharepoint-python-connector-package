@@ -1,6 +1,6 @@
 [project]
 name = "spconnect"
-version = "0.0.1"
+version = "0.0.2"
 authors = [
     {name="samuel speller", email="sspeller@companieshouse.gov.uk"}
 ]
