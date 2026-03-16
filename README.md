@@ -8,7 +8,7 @@ This package provides a Python interface for interacting with Microsoft SharePoi
   - [Instructions: Using the spconnect Package](#instructions-using-the-spconnect-package)
     - [1. Install Required Packages](#1-install-required-packages)
     - [2. Store Credentials in a .env File](#2-store-credentials-in-a-env-file)
-    - [3. Authenticate with Azure AD Using Environment Variables](#3-authenticate-with-azure-ad-using-environment-variables)
+    - [3. Authenticate with Azure AD](#3-authenticate-with-azure-ad)
     - [4 Get Site, Drive and File IDs](#4-get-site-drive-and-file-ids)
       - [4.1 Extract IDs from a SharePoint File URL](#41-extract-ids-from-a-sharepoint-file-url)
       - [4.2 Find the `site_id`](#42-find-the-site_id)
@@ -32,22 +32,19 @@ This package provides a Python interface for interacting with Microsoft SharePoi
 
 ## Installation
 
-You can install this package directly from the GitHub repo using [uv](https://github.com/astral-sh/uv). 
+You can install this package directly from the PyPI using `pip` or `uv`. 
 
 In the terminal type:
 
 ```sh
-uv add git+https://github.com/companieshouse/chcp-sharepoint-python-connector-package.git
+uv add spconnect
 ```
 
-You can also install it from a local clone of the repository using:
+or
 
 ```sh
-uv add </path/to/spconnect_package>
+pip install spconnect
 ```
-Replace `</path/to/spconnect_package>` with the path to this folder. uv will build and install the package automatically.
-
-
 
 ## Instructions: Using the spconnect Package
 
@@ -57,7 +54,8 @@ This guide provides step-by-step instructions for using the `spconnect` package 
 Ensure you have installed the `spconnect` package.
 
 ### 2. Store Credentials in a .env File
-Create a `.env` file in the root directory containing your Microsoft Entra ID credentials:
+Create a `.env` file in the root directory containing your Microsoft Entra ID credentials.
+The file should look like this:
 
 ```
 TENANT_ID=<your-tenant-id>
@@ -65,8 +63,8 @@ CLIENT_ID=<your-client-id>
 CLIENT_SECRET=<your-client-secret>
 ```
 
-### 3. Authenticate with Azure AD Using Environment Variables
-Load credentials from the environment using the `python-dotenv` package:
+### 3. Authenticate with Azure AD
+Load credentials from the `.env` file using the `python-dotenv` package:
 
 ``` python
 from dotenv import load_dotenv
