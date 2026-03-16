@@ -1,158 +1,219 @@
+# SharePoint Python Connection Package
 
-# Companies House — Analytics Repository Template
+This package provides a Python interface for interacting with Microsoft SharePoint via the Microsoft Graph API. It supports authentication, file upload/download and folder navigation.
 
-This repository is a reusable project template for the Companies House
-Analytics division (Statistics, Corporate Performance, Data Engineering,
-and Data Science). It is designed to be both a practical starter kit for a
-new analytics project and a short demonstration of what a good README
-should contain.
+- [SharePoint Python Connection Package](#sharepoint-python-connection-package)
+  - [Features](#features)
+  - [Installation](#installation)
+  - [Instructions: Using the spconnect Package](#instructions-using-the-spconnect-package)
+    - [1. Install Required Packages](#1-install-required-packages)
+    - [2. Store Credentials in a .env File](#2-store-credentials-in-a-env-file)
+    - [3. Authenticate with Azure AD Using Environment Variables](#3-authenticate-with-azure-ad-using-environment-variables)
+    - [4 Get Site, Drive and File IDs](#4-get-site-drive-and-file-ids)
+      - [4.1 Extract IDs from a SharePoint File URL](#41-extract-ids-from-a-sharepoint-file-url)
+      - [4.2 Find the `site_id`](#42-find-the-site_id)
+      - [4.3 Find the `drive_id`](#43-find-the-drive_id)
+      - [4.4 Find the `file_id`](#44-find-the-file_id)
+    - [5. Download a File](#5-download-a-file)
+    - [6. Load a file into memory (as a byte file)](#6-load-a-file-into-memory-as-a-byte-file)
+    - [7. Upload a File](#7-upload-a-file)
+  - [Notes](#notes)
+  - [Microsoft Graph API resources](#microsoft-graph-api-resources)
+  - [License](#license)
 
-This template supports mixed-language projects (SQL, Python, R) and
-provides a minimal opinionated layout, tooling hooks, and a small demo
-script that validates the Python environment.
 
-Key goals
----------
-- Provide a consistent starting point for analytics projects across the
-	organisation.
-- Demonstrate clear documentation and developer workflow.
-- Keep the repository tidy while remaining explicit about the files and
-	tools projects often need.
+## Features
+- Authenticate with Microsoft Entra ID (tenant ID, client ID, client secret)
+- Retrieve site and drive IDs
+- List folder contents
+- Download files to disk or as bytes
+- Upload files from disk
+- Convert SharePoint URLs to Graph API site identifiers
 
-Quickstart — creating the Python environment
--------------------------------------------
-This project uses the `uv` tool for environment management and cookiecutter
-for intial project setup.
+## Installation
 
-To intially create the pyproject.toml file if it is not already present
-(this is not necessary if you are not the first user of the repository)
-run the following commands in PowerShell from the repository root:
-```powershell
-cookiecutter init-config --output-dir .. --overwrite-if-exists --no-input "project_slug=$(Split-Path -Leaf (Get-Location))"
+You can install this package directly from the GitHub repo using [uv](https://github.com/astral-sh/uv). 
+
+In the terminal type:
+
+```sh
+uv add git+https://github.com/companieshouse/chcp-sharepoint-python-connector-package.git
 ```
 
-To create or update the python environment to match the one specified
-in the pyproject.toml file
-run the following commands in PowerShell from the repository root:
+You can also install it from a local clone of the repository using:
 
-```powershell
-uv sync
+```sh
+uv add </path/to/spconnect_package>
+```
+Replace `</path/to/spconnect_package>` with the path to this folder. uv will build and install the package automatically.
+
+
+
+## Instructions: Using the spconnect Package
+
+This guide provides step-by-step instructions for using the `spconnect` package to interact with SharePoint via the Microsoft Graph API. The steps below use generic SharePoint site names, drives, folders, and files so you can adapt them to your own Sharepoint Site.
+
+### 1. Install Required Packages
+Ensure you have installed the `spconnect` package.
+
+### 2. Store Credentials in a .env File
+Create a `.env` file in the root directory containing your Microsoft Entra ID credentials:
+
+```
+TENANT_ID=<your-tenant-id>
+CLIENT_ID=<your-client-id>
+CLIENT_SECRET=<your-client-secret>
 ```
 
-Notes:
-- `uv sync` will create or update a local environment according to the
-	lockfile. If you prefer to use venv, conda, or another tool, adapt
-	the workflow to match your team's standard.
-- Ensure your terminal's Python is compatible with the `requires-python`
-	constraint in `pyproject.toml` (the template pins `==3.11.9`).
+### 3. Authenticate with Azure AD Using Environment Variables
+Load credentials from the environment using the `python-dotenv` package:
 
-Repository layout
------------------
-- `.github/` — CI/workflow configuration
-- `.gitignore`, `.gitattributes` — repository-level git configs
-- `pyproject.toml` — Python project metadata and dependencies
-- `main.py` — tiny utility that checks whether declared Python
-	dependencies are importable in the current environment (see below)
-- `tools/` — auxiliary scripts (non-critical tooling)
+``` python
+from dotenv import load_dotenv
+import os
+from spconnect import SharePointClient
 
-What `main.py` does
--------------------
-`main.py` is a lightweight environment-check helper intended for use in
-templates and demos. It:
+load_dotenv()
 
-- Parses `pyproject.toml`'s `[project].dependencies` list.
-- For each declared dependency, attempts to import the corresponding
-	Python package (using a small mapping/heuristic for names that differ
-	between distribution and import names).
-- Prints a concise summary of installed and missing packages and exits
-	with a non-zero status when any dependency is missing.
+tenant_id = os.getenv("TENANT_ID")
+client_id = os.getenv("CLIENT_ID")
+client_secret = os.getenv("CLIENT_SECRET")
 
-The script purposefully does not attempt to install missing packages —
-it only reports their importability so that maintainers/contributors can
-see whether the environment is ready.
-
-Quickstart — creating the Python environment
--------------------------------------------
-This project uses the `uv` tool for environment management (the repo
-already contains a `uv.lock` file). To create or update the environment
-run the following in PowerShell from the repository root:
-
-```powershell
-uv sync
+client = SharePointClient(
+    tenant_id=tenant_id,
+    client_id=client_id,
+    client_secret=client_secret,
+    scopes=["https://graph.microsoft.com/.default"]
+)
 ```
 
-Notes:
-- `uv sync` will create or update a local environment according to the
-	lockfile. If you prefer to use venv, conda, or another tool, adapt
-	the workflow to match your team's standard.
-- Ensure your terminal's Python is compatible with the `requires-python`
-	constraint in `pyproject.toml` (the template pins `==3.11.9`).
+*Note: Make sure to install `python-dotenv` if you haven't already:*
 
-How to use the template
------------------------
-1. Copy the repository to a new project repository (or use this as a
-	 template in GitHub).
-2. Update `pyproject.toml` with your project name, description, and
-	 dependencies.
-3. Tidy or move any project-specific configs into `.config/` or
-	 `tools/` if you prefer a cleaner root (see repository notes).
-4. Run `uv sync` to create the environment and then run the environment
-	 check:
+### 4 Get Site, Drive and File IDs
 
-```powershell
-# create/update env
-uv sync
+The Microsoft Graph API uses a specific format to define the location of a file in a Sharepoint site. This can be summarised as:
 
-# run the dependency check
-.\.venv\Scripts\python.exe .\main.py
+`site_id/drive_id/file_id`
+
+*Note: confusingly the `file_id` is a distinct identifier pointing to a file within a drive. a file can be within folders in the drive, and the file ID covers the folders and file name*
+
+#### 4.1 Extract IDs from a SharePoint File URL
+
+You can use the `parse_url_to_ids()` method to extract the `site_id`, `drive_id`, and `file_id` directly from a SharePoint file URL. This is useful if you have a link to a file and want to quickly get the identifiers needed for other API calls. 
+
+To get the file URL from SharePoint:
+- Locate the file in SharePoint.
+- Click on the `More Actions` button (`...`) next to the file name.
+- Scroll down until you find `Path`.
+- Click on `Copy Path` to copy the file URL to your clipboard.
+
+```python
+# Example SharePoint file URL (replace with your actual file URL)
+file_url = "https://yourtenant.sharepoint.com/sites/YourSite/YourDrive/Your%20File.csv"
+
+# This will return a dictionary with keys: 'site_id', 'drive_id', 'file_id'
+ids = client.parse_url_to_ids(file_url)
+print(ids)
+# Output: {'site_id': '...', 'drive_id': '...', 'file_id': '...'}
+
+# You can then use these IDs in other methods:
+client.download_file_to_disk(ids['site_id'], ids['drive_id'], ids['file_id'], local_path="./downloads")
 ```
 
-Customising configs
---------------------
-Some configuration files (for example, `.pre-commit-config.yaml` or
-`.sqlfluff`) can be safely moved into a `.config/` or `tools/config/`
-directory, but keep `pyproject.toml`, `.gitignore`, and `.gitattributes`
-at the repository root. When you move configs, add small wrappers or
-update CI commands to point tools at the new locations.
+#### 4.2 Find the `site_id`
+The Microsoft Graph API uses a url in a specific format (not the url found in the browser when you visit a Sharepoint site)
+`to_graph_site_url()` converts the url found in a browser to the graph api format. This allows you to visit a Sharepoint site in browser, copy the url, and then paste it into the method to produce the graph api url. 
 
-Contributing and style
-----------------------
-- Keep code and SQL in dedicated subdirectories for larger projects
-	(for example, `src/`, `sql/`, `notebooks/`).
-- Use the `main.py` dependency check in CI to validate developer
-	environments quickly during onboarding.
+``` python
+graph_site_url = client.to_graph_site_url("https://yourcompany.sharepoint.com/sites/YourSite")
+site_id = client.get_site_id(graph_site_url)
+```
 
-License and authorship
----------------------
-Add your preferred license and authorship notes when you create a new
-project from this template.
+#### 4.3 Find the `drive_id`
 
-Included Python packages
-------------------------
-This template declares a small set of Python dependencies in `pyproject.toml` that are commonly useful for analytics projects. Below is a short description of each package and how the Companies House Analytics teams typically use them.
+To view the drives within a site, you can use: 
 
-- `matplotlib` — the foundational plotting library for Python. Use it for creating static, publication-quality charts and for low-level control when building custom visualisations. It's often used alongside `pandas` or `numpy` when exporting figures for reports.
+``` python
+client.get_drives(site_id)
+```
 
-- `numpy` — core numerical computing library. Provides fast, memory-efficient arrays and mathematical functions. Many data-processing and scientific packages (including `pandas` and `polars`) build on `numpy` arrays; expect to use it for vectorised computations and small numerical utilities.
+This will return a dictionary of drive names and IDs. 
 
-- `pandas` — the standard tabular data library in Python. Use `pandas` DataFrame/Series for most ETL, data-cleaning, aggregation, and exploratory analysis tasks. It's the go-to tool for working with CSV/Parquet/Excel and for quick ad-hoc joins, group-bys, and resampling.
+If you know the name of a drive (e.g. you are looking at it in a browser), the drive id can also be found using the name of the drive.
 
-- `polars` — an alternative, high-performance dataframe library with a focus on speed and low memory use. Useful for larger datasets or for workflows where parallel execution and query-like expressions give better throughput than `pandas`. Projects may choose `pandas` for familiarity or `polars` for performance-critical pipelines.
+```python
+client.resolve_drive_id(site_id, "Documents")
+```
 
-- `pylint` — a static code analysis tool used to enforce coding standards and catch common bugs. Use it in development and CI to keep code readable and consistent with project conventions.
+#### 4.4 Find the `file_id`
 
-- `pytest` — the testing framework used for unit and integration tests. Use `pytest` to write fast, clear tests for data transformations, utilities, and components of analytics pipelines.
+There are two main ways to find the `file_id` for a file in SharePoint:
 
-- `seaborn` — a high-level statistical plotting library built on top of `matplotlib`. Use `seaborn` for quick, attractive statistical visualisations (distribution plots, regression plots, categorical comparisons) during EDA and reporting.
+**From folder contents:**
+  Use `get_folder_content(site_id, drive_id, folder_path)` to list all files and folders in a location. This returns a dictionary where the keys are file IDs and the values are file names.
 
-- `snowflake-connector-python[pandas,secure-local-storage]` — Snowflake's Python connector with optional extras. The `pandas` extra adds helpers for loading query results directly into `pandas` DataFrames; `secure-local-storage` enables optional secure caching for authentication artifacts. Use this connector when interacting with Snowflake data warehouses from scripts and notebooks.
+  ```python
+  contents = client.get_folder_content(site_id, drive_id, folder_path="Shared Documents/Reports")
+  ```
 
-Notes and guidance
-------------------
-- The template pins a minimal set of developer and runtime tools. Add or remove packages to match your project's needs.
-- For large data processing jobs prefer using `polars` or dedicated processing engines, and reserve `pandas` for analysis and smaller ETL steps where its API convenience is valuable.
-- Keep `pylint` and `pytest` in CI to maintain code quality and prevent regressions during collaboration.
+**From file name:**
+  Use `resolve_file_id(site_id, drive_id, file_name, folder_path)` to get the file ID directly if you know the file name and (optionally) the folder path.
+
+  ```python
+  file_id = client.resolve_file_id(site_id, drive_id, file_name="file.csv", folder_path="Shared Documents/Reports")
+  ```
+
+You can then use the `file_id` with download, upload, or other file operations.
+
+### 5. Download a File
+To download a file from SharePoint:
+
+```python
+client.download_file_to_disk(site_id, drive_id, file_id, local_path="./downloads")
+```
+
+### 6. Load a file into memory (as a byte file)
+
+Load a file into memory, this is useful if you want to perform operations on the data
+before saving e.g. data cleaning:
+
+```python
+byte_file = client.download_file_bytes(site_id, drive_id, file_id)
+
+# Suppose the byte_file is an Excel file and you want to load it into polars
+df = pl.read_excel(BytesIO(byte_file))
+```
+
+### 7. Upload a File
+To upload a file to SharePoint:
+- **local_file_path**: Path to the file on your computer
+- **upload_folder_path**: Target folder in SharePoint (optional: if not supplied, the file will be uploaded to the root of the drive)
+
+```python
+client.upload_file(
+    local_file_path="./data/report.xlsx",
+    site_id=site_id,
+    drive_id=drive_id,
+    upload_folder_path="Shared Documents/Reports"
+)
+```
+
+## Notes
+- Replace all example values with your actual SharePoint site, drive, folder, and file names.
+- Ensure your Azure AD app has the necessary permissions for Microsoft Graph API.
+- For large files (>3MB), the package automatically uses chunked upload.
+
+---
+
+## Microsoft Graph API resources
+
+Microsoft have some great resources explaining how to use their Graph API
+
+[Microsoft Learn](https://learn.microsoft.com/en-us/graph/use-the-api): High level explainer.
+
+[Graph Explorer](https://developer.microsoft.com/en-us/graph/graph-explorer):
+This site contains a cheat sheet of different API calls, and lets you test them.
 
 
-
-
+## License
+MIT License
