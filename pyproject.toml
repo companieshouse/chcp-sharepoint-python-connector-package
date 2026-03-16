@@ -2,7 +2,7 @@
 name = "spconnect"
 version = "0.1.2"
 authors = [
-    {name="samuel speller", email="sspeller@companieshouse.gov.uk"}
+    {name="samuel speller", email="sam.speller@gmail.com"}
 ]
 description = """
     This package provides a Python interface for interacting with Microsoft 
